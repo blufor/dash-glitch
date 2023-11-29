@@ -1,7 +1,7 @@
 # Cloudflare configuration
 #
 # Used for syncing and link generation
-CF_REMOTE := dashglitch
+CF_REMOTE := cf
 CF_BUCKET := masterclass2
 CF_ENDPOINT := https://masterclass.dashglitch.com/
 
