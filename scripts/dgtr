@@ -8,21 +8,38 @@ set -euo pipefail
 
 MK="make -C /usr/local/lib/dgtr"
 
-format=${DGTR_FORMAT:-"flac"}
+format=${DGTR_AFORMAT:-"flac"}
 prefix=${DGTR_DIR:-${HOME}/dgtr}
 rclone_endpoint=${DGTR_ENDPOINT:-"https://masterclass.dashglitch.com/"}
 rclone_profile=${DGTR_PROFILE:-"cf"}
 rclone_bucket=${DGTR_BUCKET:-"masterclass2"}
 
+__help() {
+	cat <<EOF
+Usage: ${0} [OPTIONS] SOURCE...
+
+Options:
+	-h          This help
+	-S          Sync the local files to R2
+	-L          List file links in R2 with their original source before transcoding.
+EOF
+
+}
+
 while getopts "hSL" opt; do
 	case $opt in
 		S)
-			rclone sync -P "${prefix}/pub" ${rclone_profile}:${rclone_bucket}/
+			rclone sync -P "${prefix}/pub" "${rclone_profile}:${rclone_bucket}/"
 			exit 0
 			;;
 		L)
-			rclone ls ${rclone_profile}:${rclone_bucket}/ | while read -r size path; do \
-				src=$(cat ${prefix}/_meta/${path})
+			rclone ls "${rclone_profile}:${rclone_bucket}/" | while read -r size path; do \
+				id=$(echo "${path}" | cut -d '/' -f 1)
+				if [ -e "${prefix}/_meta/${id}" ]; then
+					src=$(cat "${prefix}/_meta/${id}")
+				else
+					src="--UNKNOWN--"
+				fi
 				printf "%s%s\t%s\t%s\n" "${rclone_endpoint}" "${path}" "${size}" "${src}"
 			done | column -t
 			exit 0
@@ -42,6 +59,10 @@ if [ $# -eq 0 ]; then
 fi
 
 for path in "${@}"; do
+	if [ ! -e "${path}" ]; then
+		echo "Path not found: '${path}'"
+		continue
+	fi
 	path=$(readlink -m "${path}")
 	if [ -d "${path}" ]; then
 		find "${path}" \

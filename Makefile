@@ -2,6 +2,8 @@
 # custom ffmpeg #
 #################
 
+BUILD_DIR ?= build
+
 BUILD_FEATURES += --enable-fontconfig
 BUILD_FEATURES += --enable-gmp
 BUILD_FEATURES += --enable-gnutls
@@ -95,6 +97,9 @@ RUN_PKGS += git
 RUN_PKGS += nasm
 RUN_PKGS += libvpl2
 RUN_PKGS += libflac8
+RUN_PKGS += rclone
+RUN_PKGS += bsdextrautils
+RUN_PKGS += bsdmainutils
 
 BUILD_DIR_FFMPEG := $(BUILD_DIR)/ffmpeg
 BUILD_DIR_AV1CODEC := $(BUILD_DIR)/av1_codec
@@ -137,8 +142,6 @@ prepare:
 
 .PHONY: install
 install: prepare install_codec install_ffmpeg
-	#$(MAKE) $(BUILD_DIR_AV1CODEC)
-	#$(MAKE) $(BUILD_DIR_FFMPEG)
 	ldconfig
 	mkdir -p /usr/local/lib/dgtr
 	cp Makefile.dgtr /usr/local/lib/dgtr/Makefile
