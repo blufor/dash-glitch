@@ -1,2 +1,10 @@
+pub
 pub/**
+_meta
+_meta/**
+*.mp4
+*.mov
+build/**
+build
+.env
 .envrc

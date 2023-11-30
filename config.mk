@@ -1,10 +1,3 @@
-# Cloudflare configuration
-#
-# Used for syncing and link generation
-CF_REMOTE := cf
-CF_BUCKET := masterclass2
-CF_ENDPOINT := https://masterclass.dashglitch.com/
-
 # FLAC audio encoding - lossless
 #
 # Docs: https://ffmpeg.org/ffmpeg-codecs.html#flac-2

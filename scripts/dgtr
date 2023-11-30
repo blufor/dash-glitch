@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# select from options
+# -h help
+# -S sync
+
+MK="make -C /usr/local/lib/dgtr"
+
+format=${DGTR_FORMAT:-"flac"}
+prefix=${DGTR_DIR:-${HOME}/dgtr}
+rclone_endpoint=${DGTR_ENDPOINT:-"https://masterclass.dashglitch.com/"}
+rclone_profile=${DGTR_PROFILE:-"cf"}
+rclone_bucket=${DGTR_BUCKET:-"masterclass2"}
+
+while getopts "hSL" opt; do
+	case $opt in
+		S)
+			rclone sync -P "${prefix}/pub" ${rclone_profile}:${rclone_bucket}/
+			exit 0
+			;;
+		L)
+			rclone ls ${rclone_profile}:${rclone_bucket}/ | while read -r size path; do \
+				src=$(cat ${prefix}/_meta/${path})
+				printf "%s%s\t%s\t%s\n" "${rclone_endpoint}" "${path}" "${size}" "${src}"
+			done | column -t
+			exit 0
+			;;
+		h)
+			__help
+			exit 0
+			;;
+		*) exit 1;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if [ $# -eq 0 ]; then
+	__help
+	exit 1
+fi
+
+for path in "${@}"; do
+	path=$(readlink -m "${path}")
+	if [ -d "${path}" ]; then
+		find "${path}" \
+			-type f -iregex ".*\.\(mp4\|mkv\|webm\|avi\|flv\|mov\|mpg\|mpeg\|wmv\|ts\)" -print0 \
+			| xargs -0 --no-run-if-empty -I{} ${MK} PREFIX="${prefix}" SOURCE="{}" ${format}
+	else
+		${MK} PREFIX="${prefix}" SOURCE="${path}" ${format}
+	fi
+done
+

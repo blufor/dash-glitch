@@ -1,0 +1,49 @@
+ifeq ($(PREFIX),)
+$(error "PREFIX is not set")
+endif
+
+ifeq ($(SOURCE),)
+$(error "SOURCE is not set")
+endif
+
+all: flac
+
+include /usr/local/lib/dgtr/config.mk
+#include -$(HOME)/.dgtr.mk
+
+PUB_DIR     := $(PREFIX)/pub
+META_DIR    := $(PREFIX)/_meta
+FFMPEG      := /usr/local/bin/ffmpeg
+FF_OPTS     := -y -movflags +faststart
+MKDIR       := $(shell which mkdir)
+SOURCE_NAME := $(basename $(notdir $(SOURCE)))
+SOURCE_SHA  := $(shell sha1sum $(SOURCE) 2>/dev/null | cut -d' ' -f1)
+
+$(META_DIR):
+	$(MKDIR) -p $@
+
+$(PUB_DIR)/$(SOURCE_SHA): $(META_DIR)
+	$(MKDIR) -p $@
+
+.PHONY: pcm
+pcm: $(PUB_DIR)/$(SOURCE_SHA)
+pcm: $(PUB_DIR)/$(SOURCE_SHA)/$(SOURCE_NAME)-av1-pcm.mp4
+$(PUB_DIR)/$(SOURCE_SHA)/$(SOURCE_NAME)-av1-pcm.mp4: $(SOURCE)
+	$(FFMPEG) -i $< $(FF_OPTS) $(FF_AUDIO_COPY) $(FF_VIDEO_AV1) $@
+	echo "$<" > $(META_DIR)/$(SOURCE_SHA)
+
+.PHONY: flac
+flac: $(PUB_DIR)/$(SOURCE_SHA)
+flac:	$(PUB_DIR)/$(SOURCE_SHA)/$(SOURCE_NAME)-av1-flac.mp4
+$(PUB_DIR)/$(SOURCE_SHA)/$(SOURCE_NAME)-av1-flac.mp4: $(SOURCE)
+	$(FFMPEG) -i $< $(FF_OPTS) $(FF_AUDIO_FLAC) $(FF_VIDEO_AV1) $@
+	echo "$<" > $(META_DIR)/$(SOURCE_SHA)
+
+.PHONY: opus
+opus: $(PUB_DIR)/$(SOURCE_SHA)
+opus:	$(PUB_DIR)/$(SOURCE_SHA)/$(SOURCE_NAME)-av1-opus.mp4
+$(PUB_DIR)/$(SOURCE_SHA)/$(SOURCE_NAME)-av1-opus.mp4: $(SOURCE)
+	$(FFMPEG) -i $< $(FF_OPTS) $(FF_AUDIO_OPUS) $(FF_VIDEO_AV1) $@
+	echo "$<" > $(META_DIR)/$(SOURCE_SHA)
+
+
