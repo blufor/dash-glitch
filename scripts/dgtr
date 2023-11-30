@@ -38,10 +38,14 @@ while getopts "hSL" opt; do
 				if [ -e "${prefix}/_meta/${id}" ]; then
 					src=$(cat "${prefix}/_meta/${id}")
 				else
-					src="--UNKNOWN--"
+					src="UNKNOWN"
 				fi
-				printf "%s%s\t%s\t%s\n" "${rclone_endpoint}" "${path}" "${size}" "${src}"
-			done | column -t
+				printf "%s%s\t%s\t%s\n" \
+					"${rclone_endpoint}" \
+					"${path// /%20}" \
+					"${size}" \
+					"${src}"
+			done | column -s $'\t' -t
 			exit 0
 			;;
 		h)
