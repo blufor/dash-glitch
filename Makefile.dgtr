@@ -16,7 +16,7 @@ META_DIR    := $(PREFIX)/_meta
 FFMPEG      := /usr/local/bin/ffmpeg
 FF_OPTS     := -y -movflags +faststart
 MKDIR       := $(shell which mkdir)
-SOURCE_NAME := $(basename $(notdir $(SOURCE)))
+SOURCE_NAME := $(shell echo "$(basename $(notdir $(SOURCE)))" | tr ' ' '_')
 SOURCE_SHA  := $(shell sha1sum $(SOURCE) 2>/dev/null | cut -d' ' -f1)
 
 $(META_DIR):
